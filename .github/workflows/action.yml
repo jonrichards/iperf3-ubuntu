@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     # Match the image of our Dockerfile
-    runs-on: ubuntu:noble
+    runs-on: ubuntu-22.04
     steps:
     # Checkout the code
     - name: Checkout code
