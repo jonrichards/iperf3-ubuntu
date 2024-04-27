@@ -14,6 +14,8 @@ jobs:
     environment: docker-build
     # Match the image of our Dockerfile
     runs-on: ubuntu-22.04
+    container:
+      image: ubuntu:noble
     steps:
     # Checkout the code
     - name: Checkout code
