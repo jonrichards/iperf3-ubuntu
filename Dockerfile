@@ -1,8 +1,11 @@
 # Using an LTS version for longevity
 FROM ubuntu:noble
 
-# Install iperf3
+# Update available packages
 RUN apt update && \
+    # Upgrade installed packages
+    apt upgrade -y && \
+    # Install iperf3
     apt install -y iperf3 && \
     # Clean up
     rm -rf /var/lib/apt/lists/* && \
