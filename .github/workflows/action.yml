@@ -1,6 +1,9 @@
 name: 'Build iperf3 image'
-# Run only on merge to main
 on:
+  # Run every Sunday at midnight
+  schedule:
+    - cron: '0 0 * * 0'
+  # Run on push to main
   push:
     branches:
       - main
