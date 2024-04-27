@@ -9,11 +9,14 @@ on:
       - main
 
 jobs:
-  build:
-    # Set the environment
+  prep:
     environment: docker-build
-    # Match the image of our Dockerfile
     runs-on: ubuntu-22.04
+    container:
+      image: ubuntu:noble
+    outputs:
+      current_date: ${{ steps.get-current-date.outputs.CURRENT_DATE }}
+      iperf_version: ${{ steps.get-latest-iperf-version.outputs.IPERF_VERSION }}
     steps:
     # Checkout the code
     - name: Checkout code
@@ -31,6 +34,14 @@ jobs:
       run: |
         chmod +x get-latest-iperf-version.sh
         echo IPERF_VERSION=$(./get-latest-iperf-version.sh) >> $GITHUB_OUTPUT
+      
+  build-and-publish-image:
+    # Set the environment
+    environment: docker-build
+    # Match the image of our Dockerfile
+    runs-on: ubuntu-22.04
+    needs: prep
+    steps:
 
     # # From https://github.com/nektos/act/issues/973#issuecomment-1874812929
     # # Handle dependencies needed for local testing with act
@@ -48,12 +59,10 @@ jobs:
 
     # Setup Docker Buildx
     - name: Setup Docker Buildx
-      if: ${{ steps.get-latest-iperf-version.outcome == 'success' }}
       uses: docker/setup-buildx-action@v3
 
     # Log in to DockerHub
     - name: Log in to DockerHub
-      if: ${{ steps.get-latest-iperf-version.outcome == 'success' }}
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -61,9 +70,8 @@ jobs:
 
     # Build and publish the Docker image
     - name: Build Docker image
-      if: ${{ steps.get-latest-iperf-version.outcome == 'success' }}
       uses: docker/build-push-action@v5
       with:
         push: true
-        tags: jonrichards/iperf3-ubuntu:latest,jonrichards/iperf3-ubuntu:${{ steps.get-latest-iperf-version.outputs.IPERF_VERSION }}_${{ steps.get-current-date.outputs.CURRENT_DATE }}
+        tags: jonrichards/iperf3-ubuntu:latest,jonrichards/iperf3-ubuntu:${{ needs.prep.outputs.iperf_version }}_${{ needs.prep.outputs.current_date }}
         file: ./Dockerfile
