@@ -10,6 +10,8 @@ on:
 
 jobs:
   build:
+    # Set the environment
+    environment: docker-build
     # Match the image of our Dockerfile
     runs-on: ubuntu-22.04
     steps:
