@@ -14,8 +14,6 @@ jobs:
     environment: docker-build
     # Match the image of our Dockerfile
     runs-on: ubuntu-22.04
-    container:
-      image: ubuntu:noble
     steps:
     # Checkout the code
     - name: Checkout code
@@ -28,6 +26,7 @@ jobs:
 
     # Get the latest iperf version
     - name: Run get-latest-iperf-version.sh
+      container: ubuntu:noble
       id: get-latest-iperf-version
       run: |
         chmod +x get-latest-iperf-version.sh
