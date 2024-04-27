@@ -1,0 +1,63 @@
+name: 'Build iperf3 image'
+# Run only on merge to main
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    # Match the image of our Dockerfile
+    runs-on: ubuntu:noble
+    steps:
+    # Checkout the code
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    # Get current date
+    - name: Get current date
+      id: get-current-date
+      run: echo CURRENT_DATE=$(date '+%Y%m%d') >> $GITHUB_OUTPUT
+
+    # Get the latest iperf version
+    - name: Run get-latest-iperf-version.sh
+      id: get-latest-iperf-version
+      run: |
+        chmod +x get-latest-iperf-version.sh
+        echo IPERF_VERSION=$(./get-latest-iperf-version.sh) >> $GITHUB_OUTPUT
+
+    # From https://github.com/nektos/act/issues/973#issuecomment-1874812929
+    # Handle dependencies needed for local testing with act
+    - name: "Determine prerequisites"
+      if: ${{ steps.get-latest-iperf-version.outcome == 'success' }} && ${{ github.event.act }}
+      id: prereq
+      run: |
+        echo "need_node=$(command -v node >/dev/null 2>&1 && echo 0 || echo 1)" >> $GITHUB_OUTPUT
+    - name: Install node
+      if: ${{ steps.get-latest-iperf-version.outcome == 'success' }} && ${{ steps.prereq.outputs.need_node == '1' }} && ${{ github.event.act }}
+      run: |
+        apt install -y curl docker.io
+        curl -sS https://webi.sh/node | sh
+        echo ~/.local/opt/node/bin >> $GITHUB_PATH
+
+    # Setup Docker Buildx
+    - name: Setup Docker Buildx
+      if: ${{ steps.get-latest-iperf-version.outcome == 'success' }}
+      uses: docker/setup-buildx-action@v3
+
+    # Log in to DockerHub
+    - name: Log in to DockerHub
+      if: ${{ steps.get-latest-iperf-version.outcome == 'success' }}
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    # Build and publish the Docker image
+    - name: Build Docker image
+      if: ${{ steps.get-latest-iperf-version.outcome == 'success' }}
+      uses: docker/build-push-action@v5
+      with:
+        push: true
+        tags: jonrichards/iperf3-ubuntu:latest,jonrichards/iperf3-ubuntu:${{ steps.get-latest-iperf-version.outputs.IPERF_VERSION }}_${{ steps.get-current-date.outputs.CURRENT_DATE }}
+        file: ./Dockerfile
