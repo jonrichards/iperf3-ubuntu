@@ -83,5 +83,7 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         push: true
+        provenance: mode=max
+        sbom: true
         tags: jonrichards/iperf3-ubuntu:latest,jonrichards/iperf3-ubuntu:${{ needs.prep.outputs.iperf_version }}_${{ needs.prep.outputs.current_date }},ghcr.io/${{ github.repository }}:latest,ghcr.io/${{ github.repository }}:${{ needs.prep.outputs.iperf_version }}_${{ needs.prep.outputs.current_date }}
         file: ./Dockerfile
