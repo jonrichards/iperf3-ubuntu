@@ -39,6 +39,9 @@ jobs:
     environment: docker-build
     # Match the image of our Dockerfile
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
     needs: prep
     steps:
 
