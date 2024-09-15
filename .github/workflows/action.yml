@@ -80,7 +80,7 @@ jobs:
 
     # Build and publish the Docker image
     - name: Build Docker image
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         push: true
         tags: jonrichards/iperf3-ubuntu:latest,jonrichards/iperf3-ubuntu:${{ needs.prep.outputs.iperf_version }}_${{ needs.prep.outputs.current_date }},ghcr.io/${{ github.repository }}:latest,ghcr.io/${{ github.repository }}:${{ needs.prep.outputs.iperf_version }}_${{ needs.prep.outputs.current_date }}
